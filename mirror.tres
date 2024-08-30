@@ -1,0 +1,48 @@
+[gd_resource type="VisualShader" load_steps=4 format=3 uid="uid://cc344ws34reod"]
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_q1vhk"]
+source = 5
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_obs1u"]
+input_name = "screen_uv"
+
+[sub_resource type="VisualShaderNodeTexture2DParameter" id="VisualShaderNodeTexture2DParameter_n5sda"]
+parameter_name = "MirrorViewPortTexture"
+texture_type = 1
+texture_repeat = 2
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_disabled, unshaded;
+
+uniform sampler2D MirrorViewPortTexture : source_color, repeat_disable;
+
+
+
+void fragment() {
+// Input:3
+	vec2 n_out3p0 = SCREEN_UV;
+
+
+	vec4 n_out2p0;
+// Texture2D:2
+	n_out2p0 = texture(MirrorViewPortTexture, n_out3p0);
+
+
+// Output:0
+	ALBEDO = vec3(n_out2p0.xyz);
+
+
+}
+"
+modes/cull = 2
+modes/specular = 2
+flags/unshaded = true
+nodes/fragment/0/position = Vector2(400, 60)
+nodes/fragment/2/node = SubResource("VisualShaderNodeTexture_q1vhk")
+nodes/fragment/2/position = Vector2(200, 60)
+nodes/fragment/3/node = SubResource("VisualShaderNodeInput_obs1u")
+nodes/fragment/3/position = Vector2(-100, 60)
+nodes/fragment/4/node = SubResource("VisualShaderNodeTexture2DParameter_n5sda")
+nodes/fragment/4/position = Vector2(-100, 160)
+nodes/fragment/connections = PackedInt32Array(3, 0, 2, 0, 4, 0, 2, 2, 2, 0, 0, 0)

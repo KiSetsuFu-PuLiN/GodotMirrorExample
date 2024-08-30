@@ -1,0 +1,87 @@
+[gd_scene load_steps=9 format=3 uid="uid://bc0sc8naga74o"]
+
+[ext_resource type="Shader" uid="uid://cc344ws34reod" path="res://mirror.tres" id="1_gcg82"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_vgmi0"]
+viewport_path = NodePath("MeshInstance3D/SubViewport")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4hjjg"]
+render_priority = 0
+shader = ExtResource("1_gcg82")
+shader_parameter/MirrorViewPortTexture = SubResource("ViewportTexture_vgmi0")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_lmsl2"]
+material = SubResource("ShaderMaterial_4hjjg")
+
+[sub_resource type="GDScript" id="GDScript_jrb4u"]
+script/source = "@tool
+
+extends MeshInstance3D
+@export var mirror_viewport:SubViewport
+@export var view_port_cameara:Camera3D
+
+func _ready():
+	var viewport_texture = mirror_viewport.get_texture();
+	mesh.surface_get_material(0).set(\"shader_parameter/MirrorViewPortTexture\", viewport_texture)
+
+func _process(delta):
+	var cur_camera:Camera3D
+	if(Engine.is_editor_hint()):
+		cur_camera = EditorInterface.get_editor_viewport_3d(0).get_camera_3d()
+	else:
+		cur_camera = get_viewport().get_camera_3d()
+	var cur_camera_transform_world = cur_camera.global_transform
+	var mirror_transform_world = global_transform
+	var cur_camera_transform_mirror = mirror_transform_world.affine_inverse() * cur_camera_transform_world;
+	var y_mirror_tranform = Transform3D(Vector3(1,0,0),Vector3(0,-1,0),Vector3(0,0,1),Vector3());
+	var camera_transform_mirror = y_mirror_tranform * cur_camera_transform_mirror;
+	var camera_transform_world = mirror_transform_world * camera_transform_mirror
+	view_port_cameara.global_transform = camera_transform_world
+"
+
+[sub_resource type="GDScript" id="GDScript_bgflf"]
+script/source = "@tool
+
+extends SubViewport
+
+func _process(delta):
+	var screen_size:Vector2
+	if(Engine.is_editor_hint()):
+		screen_size = EditorInterface.get_editor_viewport_3d(0).size
+	else:
+		screen_size = get_viewport().size
+	size = screen_size
+"
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_jfdv5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_0mspb"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." node_paths=PackedStringArray("mirror_viewport", "view_port_cameara")]
+layers = 2
+mesh = SubResource("PlaneMesh_lmsl2")
+script = SubResource("GDScript_jrb4u")
+mirror_viewport = NodePath("SubViewport")
+view_port_cameara = NodePath("SubViewport/Camera3D")
+
+[node name="SubViewport" type="SubViewport" parent="MeshInstance3D"]
+size = Vector2i(1079, 627)
+script = SubResource("GDScript_bgflf")
+
+[node name="Camera3D" type="Camera3D" parent="MeshInstance3D/SubViewport"]
+transform = Transform3D(-0.00248396, -0.207133, 0.97831, 0, -0.978313, -0.207134, -0.999997, 0.000514511, -0.00243009, 2.53028, -0.808239, -0.0875194)
+cull_mask = 1048573
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.22955, 1.48644, 0)
+mesh = SubResource("CylinderMesh_jfdv5")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.22955, -1.25159, 2.51891)
+mesh = SubResource("BoxMesh_0mspb")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.79687, 1.68179)
+current = true
